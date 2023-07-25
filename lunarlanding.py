@@ -7,6 +7,7 @@ import math
 N_STARS = 100
 ROTATION_STEP = 0.2
 SPEED_STEP = 0.1
+GRAVITY = 0.03
 # Lunar module design parameters
 BRANCH_SIZE = 40
 N_DISCS = 5
@@ -156,15 +157,21 @@ class LunarModule(turtle.Turtle):
         self.sety(self.ycor() + dy)
         # Acceleration
         if self.left_thruster and self.right_thruster:
-            self.apply_force()
+            self.apply_force("thrusters")
+        self.apply_force("gravity")
 
-    def apply_force(self):
+    def apply_force(self, mode):
         tangential = self.travel_speed
         normal = 0
-        force_direction = self.heading() + 180
+        if mode == "gravity":
+            force_direction = -90
+            step = GRAVITY
+        elif mode == "thrusters":
+            force_direction = self.heading() + 180
+            step = SPEED_STEP
         angle = force_direction - self.travel_direction
-        tangential += SPEED_STEP * math.cos(math.radians(angle))
-        normal += SPEED_STEP * math.sin(math.radians(angle))
+        tangential += step * math.cos(math.radians(angle))
+        normal += step * math.sin(math.radians(angle))
         direction_change = math.degrees(math.atan2(normal, tangential))
         self.travel_direction += direction_change
         self.travel_speed = math.hypot(tangential, normal)
