@@ -1,6 +1,7 @@
 import random
 import turtle
 import time
+import math
 
 # Game parameters
 N_STARS = 100
@@ -50,9 +51,11 @@ def create_moon():
 
 
 class LunarModule(turtle.Turtle):
-    def __init__(self, position, rotation_speed=0):
+    def __init__(self, position, rotation_speed=0, speed=0, direction=0):
         super().__init__()
         self.rotation_speed = rotation_speed
+        self.travel_speed = speed
+        self.travel_direction = direction
         self.left_thruster = False
         self.right_thruster = False
         self.fuel = turtle.Turtle()
@@ -139,11 +142,17 @@ class LunarModule(turtle.Turtle):
         self.right_thruster = False
 
     def update(self):
+        # Rotation
         if self.left_thruster:
             self.rotation_speed -= ROTATION_STEP
         if self.right_thruster:
             self.rotation_speed += ROTATION_STEP
         self.left(self.rotation_speed)
+        # Translation
+        dx = self.travel_speed * math.cos(math.radians(self.travel_direction))
+        dy = self.travel_speed * math.sin(math.radians(self.travel_direction))
+        self.setx(self.xcor() + dx)
+        self.sety(self.ycor() + dy)
 
 
 if __name__ == "__main__":
@@ -153,7 +162,10 @@ if __name__ == "__main__":
     create_stars()
     create_moon()
     lunar_module = LunarModule(
-        (-width / 3, height / 3), rotation_speed=random.randint(-9, 9)
+        position=(-width / 3, height / 3),
+        rotation_speed=random.randint(-9, 9),
+        speed=random.randint(1, 3),
+        direction=random.randint(-45, 0),
     )
 
     while True:
