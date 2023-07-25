@@ -14,6 +14,16 @@ N_DISCS = 5
 DISC_COLOR = "light gray"
 CENTER_COLOR = "gold"
 LANDING_GEAR_COLOR = "RED"
+# Landing parameters
+LANDING_PAD_POSITION = (0, -200)
+MODULE_LANDING_POSITION = (
+    LANDING_PAD_POSITION[0],
+    LANDING_PAD_POSITION[1] + BRANCH_SIZE,
+)
+LANDING_POS_TOL_X = 20
+LANDING_POS_TOL_Y = 5
+LANDING_ORIENTATION = 270
+LANDING_ORI_TOL = 15
 
 
 def init_turtle_window():
@@ -50,6 +60,49 @@ def create_moon():
     moon.color("slate gray")
     moon.sety(-height * 2.8)
     moon.dot(height * 5)
+
+
+class LandingPad(turtle.Turtle):
+    def __init__(self, position):
+        super().__init__()
+        self.hideturtle()
+        self.penup()
+        self.setposition(position)
+
+    def draw(self):
+        self.pendown()
+        self.pensize(10)
+        self.forward(BRANCH_SIZE / 2)
+        self.forward(-BRANCH_SIZE)
+        self.forward(BRANCH_SIZE / 2)
+        self.penup()
+
+    def check_landing(self, lunar_module: "LunarModule"):
+        if (
+            abs(lunar_module.xcor() - MODULE_LANDING_POSITION[0]) < LANDING_POS_TOL_X
+            and abs(lunar_module.ycor() - MODULE_LANDING_POSITION[1])
+            < LANDING_POS_TOL_Y
+        ):
+            if abs(lunar_module.heading() - LANDING_ORIENTATION) < LANDING_ORI_TOL:
+                lunar_module.setposition(MODULE_LANDING_POSITION)
+                lunar_module.setheading(LANDING_ORIENTATION)
+                lunar_module.deactivate_left_thruster()
+                lunar_module.deactivate_right_thruster()
+                lunar_module.draw()
+                return True
+            else:
+                # Crash on landing pad - wrong angle
+                lunar_module.deactivate_left_thruster()
+                lunar_module.deactivate_right_thruster()
+                lunar_module.draw()
+                return False
+        if lunar_module.ycor() < self.screen.window_height() / -2:
+            # Crash on landing pad - too low
+            lunar_module.deactivate_left_thruster()
+            lunar_module.deactivate_right_thruster()
+            lunar_module.draw()
+            return False
+        return None  # No (un)successful landing yet
 
 
 class LunarModule(turtle.Turtle):
@@ -183,9 +236,11 @@ if __name__ == "__main__":
     width = window.window_width()
     create_stars()
     create_moon()
+    landing_pad = LandingPad(LANDING_PAD_POSITION)
+    landing_pad.draw()
     lunar_module = LunarModule(
         position=(-width / 3, height / 3),
-        rotation_speed=random.randint(-9, 9),
+        rotation_speed=random.randint(-5, 5),
         speed=random.randint(1, 3),
         direction=random.randint(-45, 0),
     )
@@ -193,6 +248,14 @@ if __name__ == "__main__":
     while True:
         lunar_module.update()
         lunar_module.draw()
+        successful_landing = landing_pad.check_landing(lunar_module)
+        if successful_landing is not None:
+            if successful_landing:
+                window.title("Successful landing! Well done!")
+            else:
+                window.bgcolor("red")
+                window.title("Crash!")
+            break
         window.update()
         time.sleep(0.05)
 
