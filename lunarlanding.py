@@ -55,6 +55,9 @@ class LunarModule(turtle.Turtle):
         self.rotation_speed = rotation_speed
         self.left_thruster = False
         self.right_thruster = False
+        self.fuel = turtle.Turtle()
+        self.fuel.penup()
+        self.fuel.hideturtle()
         self.penup()
         self.hideturtle()
         self.setposition(position)
@@ -94,6 +97,34 @@ class LunarModule(turtle.Turtle):
         self.penup()
         self.setposition(position)
         self.setheading(heading)
+        # Draw burning fuel
+        self.fuel.clear()
+        if self.left_thruster:
+            self.draw_burning_fuel("left")
+        if self.right_thruster:
+            self.draw_burning_fuel("right")
+
+    def draw_burning_fuel(self, thruster):
+        direction = 1 if thruster == "left" else -1
+        self.fuel.penup()
+        self.fuel.setposition(self.position())
+        self.fuel.setheading(self.heading())
+        self.fuel.right(direction * 360 / N_DISCS)
+        self.fuel.forward(BRANCH_SIZE)
+        self.fuel.left(direction * 360 / N_DISCS)
+        # Draw burning fuel
+        self.fuel.pendown()
+        self.fuel.pensize(8)
+        self.fuel.color("yellow")
+        self.fuel.forward(BRANCH_SIZE)
+        self.fuel.backward(BRANCH_SIZE)
+        self.fuel.left(7)
+        self.fuel.color("red")
+        self.fuel.pensize(4)
+        for _ in range(2):
+            self.fuel.forward(BRANCH_SIZE)
+            self.fuel.backward(BRANCH_SIZE)
+            self.fuel.right(14)
 
     def activate_left_thruster(self):
         self.left_thruster = True
@@ -121,7 +152,9 @@ if __name__ == "__main__":
     width = window.window_width()
     create_stars()
     create_moon()
-    lunar_module = LunarModule((-width / 3, height / 3))
+    lunar_module = LunarModule(
+        (-width / 3, height / 3), rotation_speed=random.randint(-9, 9)
+    )
 
     while True:
         lunar_module.update()
