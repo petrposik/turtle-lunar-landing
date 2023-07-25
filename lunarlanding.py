@@ -1,8 +1,10 @@
 import random
 import turtle
+import time
 
 # Game parameters
 N_STARS = 100
+ROTATION_STEP = 0.2
 # Lunar module design parameters
 BRANCH_SIZE = 40
 N_DISCS = 5
@@ -48,13 +50,17 @@ def create_moon():
 
 
 class LunarModule(turtle.Turtle):
-    def __init__(self, position):
+    def __init__(self, position, rotation_speed=0):
         super().__init__()
+        self.rotation_speed = rotation_speed
+        self.left_thruster = False
+        self.right_thruster = False
         self.penup()
         self.hideturtle()
-        self.setposition(*position)
+        self.setposition(position)
 
     def draw(self):
+        self.clear()
         position = self.position()
         heading = self.heading()
         self.pendown()
@@ -83,6 +89,25 @@ class LunarModule(turtle.Turtle):
         self.setposition(position)
         self.setheading(heading)
 
+    def activate_left_thruster(self):
+        self.left_thruster = True
+
+    def activate_right_thruster(self):
+        self.right_thruster = True
+
+    def deactivate_left_thruster(self):
+        self.left_thruster = False
+
+    def deactivate_right_thruster(self):
+        self.right_thruster = False
+
+    def update(self):
+        if self.left_thruster:
+            self.rotation_speed -= ROTATION_STEP
+        if self.right_thruster:
+            self.rotation_speed += ROTATION_STEP
+        self.left(self.rotation_speed)
+
 
 if __name__ == "__main__":
     window = init_turtle_window()
@@ -91,6 +116,17 @@ if __name__ == "__main__":
     create_stars()
     create_moon()
     lunar_module = LunarModule((-width / 3, height / 3))
-    lunar_module.draw()
-    window.update()
+
+    window.onkeypress(lunar_module.activate_left_thruster, "Left")
+    window.onkeypress(lunar_module.activate_right_thruster, "Right")
+    window.onkeyrelease(lunar_module.deactivate_left_thruster, "Left")
+    window.onkeyrelease(lunar_module.deactivate_right_thruster, "Right")
+    window.listen()
+
+    while True:
+        lunar_module.update()
+        lunar_module.draw()
+        window.update()
+        time.sleep(0.05)
+
     turtle.done()
