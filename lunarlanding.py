@@ -58,6 +58,12 @@ class LunarModule(turtle.Turtle):
         self.penup()
         self.hideturtle()
         self.setposition(position)
+        window = self.getscreen()
+        window.onkeypress(self.activate_left_thruster, "Left")
+        window.onkeypress(self.activate_right_thruster, "Right")
+        window.onkeyrelease(self.deactivate_left_thruster, "Left")
+        window.onkeyrelease(self.deactivate_right_thruster, "Right")
+        window.listen()
 
     def draw(self):
         self.clear()
@@ -116,12 +122,6 @@ if __name__ == "__main__":
     create_stars()
     create_moon()
     lunar_module = LunarModule((-width / 3, height / 3))
-
-    window.onkeypress(lunar_module.activate_left_thruster, "Left")
-    window.onkeypress(lunar_module.activate_right_thruster, "Right")
-    window.onkeyrelease(lunar_module.deactivate_left_thruster, "Left")
-    window.onkeyrelease(lunar_module.deactivate_right_thruster, "Right")
-    window.listen()
 
     while True:
         lunar_module.update()
